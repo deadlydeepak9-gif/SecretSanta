@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Group {
+  id           String        @id @default(uuid())
+  name         String
+  status       String        @default("OPEN") // OPEN, DRAWN
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  participants Participant[]
+}
+
+model Participant {
+  id           String       @id @default(uuid())
+  name         String
+  groupId      String
+  group        Group        @relation(fields: [groupId], references: [id])
+  assignedToId String?      @unique
+  assignedTo   Participant? @relation("SecretSanta", fields: [assignedToId], references: [id])
+  assignedFrom Participant? @relation("SecretSanta")
+  createdAt    DateTime     @default(now())
+  isRevealed   Boolean      @default(false)
+}
