@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: "The easiest way to organize your Secret Santa gift exchange. Create a group, share the link, and let the magic happen. Free, secure, and no sign-up required.",
   keywords: ["secret santa", "gift exchange", "christmas", "holiday", "random name picker", "free secret santa generator"],
   authors: [{ name: "Secret Santa App" }],
+  verification: {
+    google: 'yUu8JQMD7zKBqqDYMCimMOTagjMiO1EW3mMfKpQ0L3c',
+  },
   openGraph: {
     title: 'Secret Santa Generator',
     description: 'The easiest way to organize your Secret Santa gift exchange. Free, secure, and instant.',
