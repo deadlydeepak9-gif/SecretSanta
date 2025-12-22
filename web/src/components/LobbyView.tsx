@@ -109,7 +109,7 @@ export default function LobbyView({ group }: { group: any }) {
                     Invite Friends
                 </h2>
                 <div className="flex gap-2">
-                    <code className="flex-1 bg-slate-100 p-3 rounded-lg text-sm font-mono truncate select-all">
+                    <code className="flex-1 bg-slate-100 p-3 rounded-lg text-sm font-mono truncate select-all" suppressHydrationWarning>
                         {shareUrl || `Loading...`}
                     </code>
                     <button
