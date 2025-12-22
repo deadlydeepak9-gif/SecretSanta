@@ -11,10 +11,17 @@ import gsap from 'gsap'
 export default function LobbyView({ group }: { group: any }) {
     const [copied, setCopied] = useState(false)
     const [drawing, setDrawing] = useState(false)
+    const [myId, setMyId] = useState<string | null>(null)
     const drawButtonRef = useRef(null)
     const participantsRef = useRef(null)
 
     useEffect(() => {
+        // Load current participant ID from localStorage
+        const storedId = localStorage.getItem(`participant_${group.id}`)
+        if (storedId) {
+            setMyId(storedId)
+        }
+
         const ctx = gsap.context(() => {
             // Pulse animation for draw button
             if (group.participants.length >= 2 && drawButtonRef.current) {
@@ -42,11 +49,18 @@ export default function LobbyView({ group }: { group: any }) {
         })
 
         return () => ctx.revert()
-    }, [group.participants.length])
+    }, [group.participants.length, group.id])
 
     const copyLink = () => {
         const url = window.location.href
         navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+    }
+
+    const copyMyLink = (participantId: string) => {
+        const link = `${window.location.origin}/group/${group.id}/reveal/${participantId}`
+        navigator.clipboard.writeText(link)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
     }
@@ -99,12 +113,24 @@ export default function LobbyView({ group }: { group: any }) {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 key={p.id}
-                                className="participant-card bg-white p-4 rounded-lg shadow-sm flex items-center border border-slate-100"
+                                className="participant-card bg-white p-4 rounded-lg shadow-sm flex items-center justify-between border border-slate-100"
                             >
-                                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold mr-3">
-                                    {p.name.charAt(0).toUpperCase()}
+                                <div className="flex items-center">
+                                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold mr-3">
+                                        {p.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="font-medium">{p.name}</span>
                                 </div>
-                                <span className="font-medium">{p.name}</span>
+                                {myId === p.id && (
+                                    <button
+                                        onClick={() => copyMyLink(p.id)}
+                                        className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition flex items-center gap-1"
+                                        title="Copy your unique reveal link"
+                                    >
+                                        <Copy className="w-3 h-3" />
+                                        My Link
+                                    </button>
+                                )}
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -119,10 +145,22 @@ export default function LobbyView({ group }: { group: any }) {
 
             {/* Admin Actions */}
             <div className="text-center pt-8">
+                {group.expectedParticipants && (
+                    <div className="mb-4 inline-block bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                        <p className="text-sm font-medium text-blue-800">
+                            Participants: {group.participants.length} / {group.expectedParticipants}
+                        </p>
+                        {group.participants.length < group.expectedParticipants && (
+                            <p className="text-xs text-blue-600 mt-1">
+                                Waiting for {group.expectedParticipants - group.participants.length} more to join
+                            </p>
+                        )}
+                    </div>
+                )}
                 <button
                     ref={drawButtonRef}
                     onClick={handleDraw}
-                    disabled={group.participants.length < 2 || drawing}
+                    disabled={group.participants.length !== group.expectedParticipants || drawing}
                     className="bg-gradient-to-r from-red-600 to-red-500 text-white text-lg font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center mx-auto"
                 >
                     {drawing ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />}

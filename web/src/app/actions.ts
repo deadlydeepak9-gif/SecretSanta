@@ -2,10 +2,11 @@
 
 import { db } from '@/lib/firebase-admin'
 
-export async function createGroup(name: string) {
+export async function createGroup(name: string, expectedParticipants: number) {
     const groupRef = db.collection('groups').doc()
     await groupRef.set({
         name,
+        expectedParticipants,
         status: 'OPEN',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -143,6 +144,7 @@ export async function getGroup(id: string) {
         id: groupDoc.id,
         name: groupData?.name || '',
         status: groupData?.status || 'OPEN',
+        expectedParticipants: groupData?.expectedParticipants || 0,
         createdAt: groupData?.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
         updatedAt: groupData?.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
         participants

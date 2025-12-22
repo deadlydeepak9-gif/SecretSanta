@@ -4,19 +4,20 @@ import { useState } from 'react'
 import { createGroup } from '@/app/actions'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Users } from 'lucide-react'
 
 export default function CreateGroupForm() {
     const [name, setName] = useState('')
+    const [expectedParticipants, setExpectedParticipants] = useState(3)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name.trim()) return
+        if (!name.trim() || expectedParticipants < 2) return
         setLoading(true)
         try {
-            const groupId = await createGroup(name)
+            const groupId = await createGroup(name, expectedParticipants)
             router.push(`/group/${groupId}`)
         } catch (error) {
             console.error(error)
@@ -37,6 +38,25 @@ export default function CreateGroupForm() {
                     className="w-full rounded-lg border-0 bg-white/90 px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-white focus:outline-none"
                     required
                 />
+            </div>
+            <div>
+                <label htmlFor="expectedCount" className="block text-sm font-medium text-red-100 mb-2 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    How many people will join?
+                </label>
+                <input
+                    id="expectedCount"
+                    type="number"
+                    value={expectedParticipants}
+                    onChange={(e) => setExpectedParticipants(parseInt(e.target.value) || 2)}
+                    min="2"
+                    max="50"
+                    className="w-full rounded-lg border-0 bg-white/90 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-white focus:outline-none"
+                    required
+                />
+                <p className="text-xs text-red-100 mt-1.5">
+                    Names will only be drawn when this exact number joins
+                </p>
             </div>
             <motion.button
                 whileHover={{ scale: 1.02 }}
