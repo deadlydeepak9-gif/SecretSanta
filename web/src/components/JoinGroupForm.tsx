@@ -19,7 +19,10 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!name.trim()) return
+
         setLoading(true)
+        setError('')
+
         try {
             // Generate browser fingerprint
             const fp = await FingerprintJS.load()
@@ -41,8 +44,10 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
                 router.refresh()
             }, 3000)
         } catch (e: any) {
-            console.error(e)
-            alert(e.message || 'Failed to join')
+            console.error('Join error:', e)
+            // Extract user-friendly error message
+            const errorMessage = e?.message || e?.toString() || 'Failed to join group. Please try again.'
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -85,10 +90,22 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
+            {error && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                        <p className="text-sm font-medium text-red-800">{error}</p>
+                    </div>
+                </div>
+            )}
+
             <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                    setName(e.target.value)
+                    setError('') // Clear error on input
+                }}
                 placeholder="Your Name"
                 className="w-full rounded-lg border-red-200 px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none border bg-white"
                 required
@@ -101,7 +118,10 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
                 </label>
                 <textarea
                     value={wishlist}
-                    onChange={(e) => setWishlist(e.target.value)}
+                    onChange={(e) => {
+                        setWishlist(e.target.value)
+                        setError('') // Clear error on input
+                    }}
                     placeholder="Add product links (Amazon/Flipkart) or product names..."
                     rows={3}
                     className="w-full rounded-lg border-slate-200 px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none border bg-white resize-none text-sm"
