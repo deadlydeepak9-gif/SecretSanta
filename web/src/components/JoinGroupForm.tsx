@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { joinGroup } from '@/app/actions'
 import { Loader2, CheckCircle, Copy, Gift } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
 export default function JoinGroupForm({ groupId }: { groupId: string }) {
     const [name, setName] = useState('')
@@ -19,7 +20,12 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
         if (!name.trim()) return
         setLoading(true)
         try {
-            const id = await joinGroup(groupId, name, wishlist.trim() || undefined)
+            // Generate browser fingerprint
+            const fp = await FingerprintJS.load()
+            const result = await fp.get()
+            const fingerprint = result.visitorId
+
+            const id = await joinGroup(groupId, name, wishlist.trim() || undefined, fingerprint)
 
             // Store in localStorage
             localStorage.setItem(`participant_${groupId}`, id)
@@ -33,9 +39,9 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
             setTimeout(() => {
                 router.refresh()
             }, 3000)
-        } catch (e) {
+        } catch (e: any) {
             console.error(e)
-            alert('Failed to join')
+            alert(e.message || 'Failed to join')
         } finally {
             setLoading(false)
         }

@@ -15,7 +15,7 @@ export async function createGroup(name: string, expectedParticipants: number, bu
     return groupRef.id
 }
 
-export async function joinGroup(groupId: string, name: string, wishlist?: string) {
+export async function joinGroup(groupId: string, name: string, wishlist?: string, fingerprint?: string) {
     // Check if group is open
     const groupDoc = await db.collection('groups').doc(groupId).get()
 
@@ -24,10 +24,23 @@ export async function joinGroup(groupId: string, name: string, wishlist?: string
     const groupData = groupDoc.data()
     if (groupData?.status !== 'OPEN') throw new Error('Group is already drawn')
 
+    // Check for duplicate fingerprints
+    if (fingerprint) {
+        const participantsSnapshot = await db.collection('groups').doc(groupId).collection('participants').get()
+        const existingFingerprints = participantsSnapshot.docs
+            .map(doc => doc.data().fingerprint)
+            .filter(fp => fp === fingerprint)
+
+        if (existingFingerprints.length > 0) {
+            throw new Error('You have already joined this group!')
+        }
+    }
+
     const participantRef = db.collection('groups').doc(groupId).collection('participants').doc()
     await participantRef.set({
         name,
         wishlist: wishlist || null,
+        fingerprint: fingerprint || null,
         assignedToId: null,
         isRevealed: false,
         createdAt: new Date(),
