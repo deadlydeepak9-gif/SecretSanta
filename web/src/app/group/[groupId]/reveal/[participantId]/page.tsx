@@ -42,8 +42,8 @@ export default async function RevealPage({ params }: { params: Promise<{ groupId
     return (
         <main className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4">
             <StrictRevealWrapper
+                participant={participant}
                 id={participant.id}
-                name={participant.assignedTo.name}
             />
         </main>
     )

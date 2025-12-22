@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { drawNames } from '@/app/actions'
+import { drawNames, removeParticipant } from '@/app/actions'
 import JoinGroupForm from './JoinGroupForm'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Copy, Sparkles, Loader2 } from 'lucide-react'
+import { Users, Copy, Sparkles, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import gsap from 'gsap'
 
@@ -12,6 +12,7 @@ export default function LobbyView({ group }: { group: any }) {
     const [copied, setCopied] = useState(false)
     const [drawing, setDrawing] = useState(false)
     const [myId, setMyId] = useState<string | null>(null)
+    const [deleting, setDeleting] = useState<string | null>(null)
     const drawButtonRef = useRef(null)
     const participantsRef = useRef(null)
 
@@ -63,6 +64,25 @@ export default function LobbyView({ group }: { group: any }) {
         navigator.clipboard.writeText(link)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
+    }
+
+    const handleDelete = async (participantId: string, name: string) => {
+        if (!confirm(`Remove ${name} from the group?`)) return
+
+        setDeleting(participantId)
+        try {
+            await removeParticipant(group.id, participantId)
+
+            // Clear localStorage if deleting own participant
+            if (participantId === myId) {
+                localStorage.removeItem(`participant_${group.id}`)
+            }
+
+            window.location.reload()
+        } catch (e: any) {
+            alert(e.message || 'Failed to remove participant')
+            setDeleting(null)
+        }
     }
 
     const handleDraw = async () => {
@@ -130,16 +150,26 @@ export default function LobbyView({ group }: { group: any }) {
                                     </div>
                                     <span className="font-medium">{p.name}</span>
                                 </div>
-                                {myId === p.id && (
+                                <div className="flex items-center gap-2">
+                                    {myId === p.id && (
+                                        <button
+                                            onClick={() => copyMyLink(p.id)}
+                                            className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition flex items-center gap-1"
+                                            title="Copy your unique reveal link"
+                                        >
+                                            <Copy className="w-3 h-3" />
+                                            My Link
+                                        </button>
+                                    )}
                                     <button
-                                        onClick={() => copyMyLink(p.id)}
-                                        className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition flex items-center gap-1"
-                                        title="Copy your unique reveal link"
+                                        onClick={() => handleDelete(p.id, p.name)}
+                                        disabled={deleting === p.id}
+                                        className="text-xs bg-red-50 text-red-700 px-2 py-1.5 rounded-lg hover:bg-red-100 transition disabled:opacity-50"
+                                        title="Remove participant"
                                     >
-                                        <Copy className="w-3 h-3" />
-                                        My Link
+                                        <X className="w-3 h-3" />
                                     </button>
-                                )}
+                                </div>
                             </motion.div>
                         ))}
                     </AnimatePresence>

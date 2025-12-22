@@ -92,6 +92,7 @@ export async function getParticipant(id: string) {
                     assignedTo = {
                         id: assignedToDoc.id,
                         name: assignedData?.name || '',
+                        wishlist: assignedData?.wishlist || null,
                         assignedToId: assignedData?.assignedToId || null,
                         isRevealed: assignedData?.isRevealed || false,
                         createdAt: assignedData?.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
@@ -178,4 +179,19 @@ export async function markAsRevealed(id: string) {
     }
 
     throw new Error('Participant not found')
+}
+
+export async function removeParticipant(groupId: string, participantId: string) {
+    // Check if group is still open
+    const groupDoc = await db.collection('groups').doc(groupId).get()
+
+    if (!groupDoc.exists) throw new Error('Group not found')
+
+    const groupData = groupDoc.data()
+    if (groupData?.status !== 'OPEN') {
+        throw new Error('Cannot remove participants after names are drawn')
+    }
+
+    // Delete the participant
+    await db.collection('groups').doc(groupId).collection('participants').doc(participantId).delete()
 }
