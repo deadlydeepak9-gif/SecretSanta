@@ -1,42 +1,30 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { markAsRevealed } from '@/app/actions'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { markAsRevealed } from '@/app/actions'
 import { motion } from 'framer-motion'
-import confetti from 'canvas-confetti'
 import gsap from 'gsap'
 
-export default function StrictRevealWrapper({ id, name }: { id: string, name: string }) {
+export default function StrictRevealWrapper({ participant, id }: { participant: any; id: string }) {
     const [timeLeft, setTimeLeft] = useState(60)
     const router = useRouter()
     const cardRef = useRef(null)
-    const timerRef = useRef(null)
     const nameRef = useRef(null)
+    const timerRef = useRef(null)
+
+    const name = participant.assignedTo?.name || 'Unknown'
 
     useEffect(() => {
-        // Immediate reveal logic
-        const reveal = async () => {
-            try {
-                await markAsRevealed(id)
-                // Trigger confetti immediately
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                })
-            } catch (e) {
-                console.error("Failed to mark as revealed", e)
-            }
-        }
-        reveal()
+        // Mark as revealed
+        markAsRevealed(id)
 
-        // GSAP Animations
+        // GSAP animations
         const ctx = gsap.context(() => {
-            // Dramatic card entrance
+            // Card entrance
             gsap.from(cardRef.current, {
                 scale: 0.5,
-                rotation: -10,
+                rotation: 360,
                 opacity: 0,
                 duration: 1,
                 ease: 'elastic.out(1, 0.5)',
@@ -95,6 +83,30 @@ export default function StrictRevealWrapper({ id, name }: { id: string, name: st
                 <h1 ref={nameRef} className="text-4xl md:text-5xl font-extrabold text-red-600 mb-6 break-words">
                     {name}
                 </h1>
+
+                {/* Wishlist Display */}
+                {participant.assignedTo?.wishlist && (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-4 mb-6 text-left">
+                        <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2 text-sm">
+                            🎅 Their Wishlist:
+                        </h3>
+                        <div className="text-sm text-blue-800 whitespace-pre-wrap break-words">
+                            {participant.assignedTo.wishlist.startsWith('http') ? (
+                                <a
+                                    href={participant.assignedTo.wishlist}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline font-medium"
+                                >
+                                    🔗 View Product Link
+                                </a>
+                            ) : (
+                                participant.assignedTo.wishlist
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div className="h-1 w-20 bg-gray-200 mx-auto rounded-full mb-6"></div>
                 <p className="text-slate-400 text-xs">
                     Memorize this name now. You cannot see it again.
