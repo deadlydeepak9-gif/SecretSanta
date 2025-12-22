@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { joinGroup } from '@/app/actions'
-import { Loader2, CheckCircle, Copy, Gift } from 'lucide-react'
+import { Loader2, CheckCircle, Copy, Gift, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
@@ -11,6 +11,7 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
     const [wishlist, setWishlist] = useState('')
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
+    const [error, setError] = useState('')
     const [participantId, setParticipantId] = useState('')
     const [linkCopied, setLinkCopied] = useState(false)
     const router = useRouter()
