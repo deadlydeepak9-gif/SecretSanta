@@ -2,11 +2,12 @@
 
 import { db } from '@/lib/firebase-admin'
 
-export async function createGroup(name: string, expectedParticipants: number) {
+export async function createGroup(name: string, expectedParticipants: number, budget?: string) {
     const groupRef = db.collection('groups').doc()
     await groupRef.set({
         name,
         expectedParticipants,
+        budget: budget || null,
         status: 'OPEN',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -14,7 +15,7 @@ export async function createGroup(name: string, expectedParticipants: number) {
     return groupRef.id
 }
 
-export async function joinGroup(groupId: string, name: string) {
+export async function joinGroup(groupId: string, name: string, wishlist?: string) {
     // Check if group is open
     const groupDoc = await db.collection('groups').doc(groupId).get()
 
@@ -26,6 +27,7 @@ export async function joinGroup(groupId: string, name: string) {
     const participantRef = db.collection('groups').doc(groupId).collection('participants').doc()
     await participantRef.set({
         name,
+        wishlist: wishlist || null,
         assignedToId: null,
         isRevealed: false,
         createdAt: new Date(),
@@ -145,6 +147,7 @@ export async function getGroup(id: string) {
         name: groupData?.name || '',
         status: groupData?.status || 'OPEN',
         expectedParticipants: groupData?.expectedParticipants || 0,
+        budget: groupData?.budget || null,
         createdAt: groupData?.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
         updatedAt: groupData?.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
         participants

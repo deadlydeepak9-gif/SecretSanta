@@ -95,6 +95,15 @@ export default function LobbyView({ group }: { group: any }) {
                         {copied ? 'Copied!' : <Copy className="w-4 h-4" />}
                     </button>
                 </div>
+
+                {/* Budget Display */}
+                {group.budget && (
+                    <div className="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3">
+                        <p className="text-sm font-semibold text-green-900 flex items-center gap-2">
+                            🎁 <span>Suggested Budget: {group.budget}</span>
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Participants List */}

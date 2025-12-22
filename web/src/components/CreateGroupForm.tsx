@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { createGroup } from '@/app/actions'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Loader2, Users } from 'lucide-react'
+import { Loader2, Users, DollarSign } from 'lucide-react'
 
 export default function CreateGroupForm() {
     const [name, setName] = useState('')
     const [expectedParticipants, setExpectedParticipants] = useState(3)
+    const [budget, setBudget] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
@@ -17,7 +18,7 @@ export default function CreateGroupForm() {
         if (!name.trim() || expectedParticipants < 2) return
         setLoading(true)
         try {
-            const groupId = await createGroup(name, expectedParticipants)
+            const groupId = await createGroup(name, expectedParticipants, budget.trim() || undefined)
             router.push(`/group/${groupId}`)
         } catch (error) {
             console.error(error)
@@ -56,6 +57,23 @@ export default function CreateGroupForm() {
                 />
                 <p className="text-xs text-red-100 mt-1.5">
                     Names will only be drawn when this exact number joins
+                </p>
+            </div>
+            <div>
+                <label htmlFor="budget" className="block text-sm font-medium text-red-100 mb-2 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Budget (Optional)
+                </label>
+                <input
+                    id="budget"
+                    type="text"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    placeholder="e.g. $20-30 or ₹500"
+                    className="w-full rounded-lg border-0 bg-white/90 px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-white focus:outline-none"
+                />
+                <p className="text-xs text-red-100 mt-1.5">
+                    Suggested spending amount for gifts
                 </p>
             </div>
             <motion.button

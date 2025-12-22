@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { joinGroup } from '@/app/actions'
-import { Loader2, CheckCircle, Copy } from 'lucide-react'
+import { Loader2, CheckCircle, Copy, Gift } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function JoinGroupForm({ groupId }: { groupId: string }) {
     const [name, setName] = useState('')
+    const [wishlist, setWishlist] = useState('')
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [participantId, setParticipantId] = useState('')
@@ -18,7 +19,7 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
         if (!name.trim()) return
         setLoading(true)
         try {
-            const id = await joinGroup(groupId, name)
+            const id = await joinGroup(groupId, name, wishlist.trim() || undefined)
 
             // Store in localStorage
             localStorage.setItem(`participant_${groupId}`, id)
@@ -26,6 +27,7 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
             setParticipantId(id)
             setSuccess(true)
             setName('')
+            setWishlist('')
 
             // Reload after showing success
             setTimeout(() => {
@@ -75,21 +77,39 @@ export default function JoinGroupForm({ groupId }: { groupId: string }) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+        <form onSubmit={handleSubmit} className="space-y-3">
             <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your Name"
-                className="flex-1 rounded-lg border-red-200 px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none border bg-white"
+                className="w-full rounded-lg border-red-200 px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none border bg-white"
                 required
             />
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-2">
+                    <Gift className="w-4 h-4" />
+                    Wishlist (Optional)
+                </label>
+                <textarea
+                    value={wishlist}
+                    onChange={(e) => setWishlist(e.target.value)}
+                    placeholder="Add product links (Amazon/Flipkart) or product names..."
+                    rows={3}
+                    className="w-full rounded-lg border-slate-200 px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none border bg-white resize-none text-sm"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                    Your Secret Santa will see this to help choose a gift!
+                </p>
+            </div>
+
             <button
                 type="submit"
                 disabled={loading}
-                className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50 transition active:scale-95 flex items-center justify-center"
+                className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50 transition active:scale-95 flex items-center justify-center w-full"
             >
-                {loading ? <Loader2 className="animate-spin" /> : 'Join'}
+                {loading ? <Loader2 className="animate-spin" /> : 'Join Group'}
             </button>
         </form>
     )
