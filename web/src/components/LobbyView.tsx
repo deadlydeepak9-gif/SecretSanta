@@ -13,10 +13,14 @@ export default function LobbyView({ group }: { group: any }) {
     const [drawing, setDrawing] = useState(false)
     const [myId, setMyId] = useState<string | null>(null)
     const [deleting, setDeleting] = useState<string | null>(null)
+    const [shareUrl, setShareUrl] = useState('')
     const drawButtonRef = useRef(null)
     const participantsRef = useRef(null)
 
     useEffect(() => {
+        // Set share URL on client side only
+        setShareUrl(window.location.href)
+
         // Load current participant ID from localStorage
         const storedId = localStorage.getItem(`participant_${group.id}`)
         if (storedId) {
@@ -106,7 +110,7 @@ export default function LobbyView({ group }: { group: any }) {
                 </h2>
                 <div className="flex gap-2">
                     <code className="flex-1 bg-slate-100 p-3 rounded-lg text-sm font-mono truncate select-all">
-                        {typeof window !== 'undefined' ? window.location.href : `.../group/${group.id}`}
+                        {shareUrl || `Loading...`}
                     </code>
                     <button
                         onClick={copyLink}
